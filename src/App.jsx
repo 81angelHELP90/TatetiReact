@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import './App.css'
 
+import confetti from 'canvas-confetti'
+
 const TURN = {
   X: 'X',
   O: 'O'
@@ -19,12 +21,19 @@ const Square = ({ children, isSelected, updateBoard, index }) => {
   )
 }
 
-const WinnerBanner = ({winner}) => {
-  const showText = winner ? 'El ganador es: ' + winner : 'Empate'
+const WinnerBanner = ({winner, resetGame}) => {
+  //const showText = winner ? 'El ganador es: ' + winner : 'Empate'
+  if(winner) confetti()
 
   return (
-    <div >
-      <h1>{showText}</h1>
+    <div className='text'>
+      <h1>{winner ? 'El ganador es:' : 'Empate'}</h1>
+      <header className='win'>
+        {winner && <Square>{winner}</Square>}
+      </header>
+      <footer>
+        <button onClick={resetGame}>Volver a jugar</button>
+      </footer>
     </div>
   )
 }
@@ -96,9 +105,9 @@ function App() {
     for (let i = 0; i < aGame.length; i++) {
       let sGame = aGame[i]
 
-      if (sGame === WINNER_X) return 'X'
+      if (sGame === WINNER_X) return TURN.X
 
-      if (sGame === WINNER_O) return 'O'
+      if (sGame === WINNER_O) return TURN.O
     }
 
     return ''
@@ -113,10 +122,10 @@ function App() {
       secondaryDiagonal.push(mMatrix[i][mMatrix.length - 1 - i])
     }
 
-    if (mainDiagonal.every(item => item == 'X') || mainDiagonal.every(item => item == 'O'))
+    if (mainDiagonal.every(item => item == TURN.X) || mainDiagonal.every(item => item == TURN.O))
       return mainDiagonal[0]
 
-    if (secondaryDiagonal.every(item => item == 'X') || secondaryDiagonal.every(item => item == 'O'))
+    if (secondaryDiagonal.every(item => item == TURN.X) || secondaryDiagonal.every(item => item == TURN.O))
       return secondaryDiagonal[0]
 
     return ''
@@ -147,7 +156,13 @@ function App() {
     */
     const objWinner = checkWinner(newBoard)
     setWinner(objWinner)
-  };
+  }
+
+  const resetGame = () => {
+    setBoard(Array(9).fill(null))
+    setTurn(TURN.X)
+    setWinner(null)
+  }
 
   return (
     <main className='board'>
@@ -167,8 +182,8 @@ function App() {
         <Square isSelected={turn === TURN.O}>{TURN.O}</Square>
       </section>
       { winner !== null && (
-          <section>
-            <WinnerBanner winner={winner}></WinnerBanner>
+          <section className='winner'>
+            <WinnerBanner winner={winner} resetGame={resetGame}></WinnerBanner>
           </section>
         )
       }
