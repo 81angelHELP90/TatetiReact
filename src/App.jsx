@@ -1,141 +1,28 @@
 import { useState } from 'react'
 import './App.css'
 
-import confetti from 'canvas-confetti'
-
-const TURN = {
-  X: 'X',
-  O: 'O'
-}
-
-const Square = ({ children, isSelected, updateBoard, index }) => {
-  const className = `square ${isSelected ? 'is-selected' : ''}`
-  const handleClick = () => {
-    updateBoard(index)
-  }
-
-  return (
-    <div className={className} onClick={handleClick}>
-      {children}
-    </div>
-  )
-}
-
-const WinnerBanner = ({winner, resetGame}) => {
-  //const showText = winner ? 'El ganador es: ' + winner : 'Empate'
-  if(winner) confetti()
-
-  return (
-    <div className='text'>
-      <h1>{winner ? 'El ganador es:' : 'Empate'}</h1>
-      <header className='win'>
-        {winner && <Square>{winner}</Square>}
-      </header>
-      <footer>
-        <button onClick={resetGame}>Volver a jugar</button>
-      </footer>
-    </div>
-  )
-}
+import { Square } from './components/Square'
+import { TURN } from './utils/constants'
+import { checkWinner } from './utils/helpers'
+import { WinnerBanner } from './components/WinnerBanner'
 
 function App() {
   //Estado del newBoard
-  const [board, setBoard] = useState(Array(9).fill(null))
+  const [board, setBoard] = useState(() => {
+    const boardFromStorage = window.localStorage.getItem('board')
+    return boardFromStorage ? JSON.parse(boardFromStorage) : Array(9).fill(null)
+  })
   //Estado para manejar los turnos
-  const [turn, setTurn] = useState(TURN.X)
-
+  const [turn, setTurn] = useState(() => {
+    const turnFromLocalStorage = window.localStorage.getItem('turn')
+    return turnFromLocalStorage ?? TURN.X
+  })
   const [winner, setWinner] = useState(null)
-
-  const getMatrix = (newBoard) => {
-    let matrix = []
-    let tupla = []
-    let index = 0
-
-    newBoard.forEach(item => {
-      index++
-
-      if (index <= 3) {
-        tupla.push(item)
-      }
-
-      if (index == 3) {
-        index = 0
-        matrix.push(tupla)
-        tupla = []
-      }
-    });
-
-    return matrix
-  }
-
-  const checkWinner = (newBoard) => {
-    //Enfoque matriz
-    let matrix = getMatrix(newBoard)
-    
-    //Busco el ganador en las diagonales
-    let dWinner = checkDiagonal(matrix)
-    if(dWinner !== '')
-      return dWinner
-    
-
-    for (let i = 0; i < 3; i++) {
-      let row = ''
-      let column = ''
-
-      for (let j = 0; j < 3; j++) {
-        row += matrix[i][j]
-        column += matrix[j][i]
-
-        if (j == 2) {
-          //Busco al ganador entre las filas y columnas
-          let winner = checkRowAndColumn([row, column])
-          if(winner !== '')
-            return winner
-        }
-      }
-    }
-
-    return newBoard.every(turn => turn) ? '' : null
-  }
-
-  const checkRowAndColumn = (aGame) => {
-    const WINNER_X = 'XXX'
-    const WINNER_O = 'OOO'
-
-    for (let i = 0; i < aGame.length; i++) {
-      let sGame = aGame[i]
-
-      if (sGame === WINNER_X) return TURN.X
-
-      if (sGame === WINNER_O) return TURN.O
-    }
-
-    return ''
-  }
-
-  const checkDiagonal = (mMatrix) => {
-    let mainDiagonal = []
-    let secondaryDiagonal = []
-
-    for (let i = 0; i < mMatrix.length; i++) {
-      mainDiagonal.push(mMatrix[i][i])
-      secondaryDiagonal.push(mMatrix[i][mMatrix.length - 1 - i])
-    }
-
-    if (mainDiagonal.every(item => item == TURN.X) || mainDiagonal.every(item => item == TURN.O))
-      return mainDiagonal[0]
-
-    if (secondaryDiagonal.every(item => item == TURN.X) || secondaryDiagonal.every(item => item == TURN.O))
-      return secondaryDiagonal[0]
-
-    return ''
-  }
 
   //Actulizo el tablero y alterno turno
   const updateBoard = (index) => {
 
-    if (board[index] || winner)
-      return
+    if (board[index] || winner) return
 
     const newBoard = [...board]
 
@@ -143,6 +30,10 @@ function App() {
     setBoard(newBoard)
 
     const newTurn = turn === TURN.X ? TURN.O : TURN.X
+
+    //Guardo el estado actual del juego:
+    window.localStorage.setItem('board', JSON.stringify(newBoard))
+    window.localStorage.setItem('turn', newTurn)
 
     //Actualiso el estado del turno con el siguiete turno
     setTurn(newTurn)
@@ -162,10 +53,14 @@ function App() {
     setBoard(Array(9).fill(null))
     setTurn(TURN.X)
     setWinner(null)
+
+    localStorage.removeItem('board')
+    localStorage.removeItem('turn')
   }
 
   return (
     <main className='board'>
+      <button onClick={resetGame}>Volver a jugar</button>
       <section className='game'>
         {
           board.map((c, index) => {
@@ -181,12 +76,7 @@ function App() {
         <Square isSelected={turn === TURN.X}>{TURN.X}</Square>
         <Square isSelected={turn === TURN.O}>{TURN.O}</Square>
       </section>
-      { winner !== null && (
-          <section className='winner'>
-            <WinnerBanner winner={winner} resetGame={resetGame}></WinnerBanner>
-          </section>
-        )
-      }
+      <WinnerBanner winner={winner} resetGame={resetGame}></WinnerBanner>
     </main>
   )
 }
