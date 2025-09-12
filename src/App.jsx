@@ -32,8 +32,8 @@ function App() {
     const newTurn = turn === TURN.X ? TURN.O : TURN.X
 
     //Guardo el estado actual del juego:
-    window.localStorage.setItem('board', JSON.stringify(newBoard))
-    window.localStorage.setItem('turn', newTurn)
+    localStorage.setItem('board', JSON.stringify(newBoard))
+    localStorage.setItem('turn', newTurn)
 
     //Actualiso el estado del turno con el siguiete turno
     setTurn(newTurn)

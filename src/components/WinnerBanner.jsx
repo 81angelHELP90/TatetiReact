@@ -3,6 +3,7 @@ import { Square } from './Square'
 
 export const WinnerBanner = ({winner, resetGame}) => {
     let textResult = winner ? 'El ganador es:' : 'Empate'
+    
     if(winner == null) return winner
     if(winner) confetti()
 
