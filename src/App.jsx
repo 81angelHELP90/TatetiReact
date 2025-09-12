@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import './App.css'
 
-import { Square } from './components/Square'
 import { TURN } from './utils/constants'
 import { checkWinner } from './utils/helpers'
+
 import { WinnerBanner } from './components/WinnerBanner'
+import { Square } from './components/Square'
 
 function App() {
   //Estado del newBoard
@@ -57,7 +58,7 @@ function App() {
     localStorage.removeItem('board')
     localStorage.removeItem('turn')
   }
-
+  
   return (
     <main className='board'>
       <button onClick={resetGame}>Volver a jugar</button>
