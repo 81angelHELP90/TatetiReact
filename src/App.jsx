@@ -1,34 +1,84 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+import { TURN } from './utils/constants'
+import { checkWinner } from './utils/helpers'
 
+import { WinnerBanner } from './components/WinnerBanner'
+import { Square } from './components/Square'
+
+function App() {
+  //Estado del newBoard
+  const [board, setBoard] = useState(() => {
+    const boardFromStorage = window.localStorage.getItem('board')
+    return boardFromStorage ? JSON.parse(boardFromStorage) : Array(9).fill(null)
+  })
+  //Estado para manejar los turnos
+  const [turn, setTurn] = useState(() => {
+    const turnFromLocalStorage = window.localStorage.getItem('turn')
+    return turnFromLocalStorage ?? TURN.X
+  })
+  const [winner, setWinner] = useState(null)
+
+  //Actulizo el tablero y alterno turno
+  const updateBoard = (index) => {
+
+    if (board[index] || winner) return
+
+    const newBoard = [...board]
+
+    newBoard[index] = turn
+    setBoard(newBoard)
+
+    const newTurn = turn === TURN.X ? TURN.O : TURN.X
+
+    //Guardo el estado actual del juego:
+    localStorage.setItem('board', JSON.stringify(newBoard))
+    localStorage.setItem('turn', newTurn)
+
+    //Actualiso el estado del turno con el siguiete turno
+    setTurn(newTurn)
+
+    /**
+     * Hago una copia de la prop board para poder manipularla.
+     * Es una MALA practica alterar un prop directamente. 
+     * Las props deben ser tratadas como objetos inmutables
+     * El estado de una props solo se modifica a traves de su funcion modificadora 
+     * proporcionada por el hoock useState
+    */
+    const objWinner = checkWinner(newBoard)
+    setWinner(objWinner)
+  }
+
+  const resetGame = () => {
+    setBoard(Array(9).fill(null))
+    setTurn(TURN.X)
+    setWinner(null)
+
+    localStorage.removeItem('board')
+    localStorage.removeItem('turn')
+  }
+  
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <main className='board'>
+      <button onClick={resetGame}>Volver a jugar</button>
+      <section className='game'>
+        {
+          board.map((c, index) => {
+            return (
+              <Square key={index} index={index} updateBoard={updateBoard}>
+                {board[index]}
+              </Square>
+            )
+          })
+        }
+      </section>
+      <section className='turn'>
+        <Square isSelected={turn === TURN.X}>{TURN.X}</Square>
+        <Square isSelected={turn === TURN.O}>{TURN.O}</Square>
+      </section>
+      <WinnerBanner winner={winner} resetGame={resetGame}></WinnerBanner>
+    </main>
   )
 }
 
