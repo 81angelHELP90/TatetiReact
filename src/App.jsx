@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 
 import { TURN } from './utils/constants'
-import { checkWinner } from './utils/helpers'
+import { checkWinner, saveGameToLocalStorage } from './utils/helpers'
 
 import { WinnerBanner } from './components/WinnerBanner'
 import { Square } from './components/Square'
@@ -20,6 +20,8 @@ function App() {
   })
   const [winner, setWinner] = useState(null)
 
+  const [position, setPosition] = useState({x: 0, y: 0})
+
   //Actulizo el tablero y alterno turno
   const updateBoard = (index) => {
 
@@ -31,10 +33,6 @@ function App() {
     setBoard(newBoard)
 
     const newTurn = turn === TURN.X ? TURN.O : TURN.X
-
-    //Guardo el estado actual del juego:
-    localStorage.setItem('board', JSON.stringify(newBoard))
-    localStorage.setItem('turn', newTurn)
 
     //Actualiso el estado del turno con el siguiete turno
     setTurn(newTurn)
@@ -58,9 +56,38 @@ function App() {
     localStorage.removeItem('board')
     localStorage.removeItem('turn')
   }
-  
+
+  useEffect(() => {
+     //Guardo la partida 
+    saveGameToLocalStorage([
+      { key: 'board', value: JSON.stringify(board) },
+      { key: 'turn', value: turn }
+    ])
+  }, [turn, board])
+
+  useEffect(() => {
+    const handlePointerMove = (event) => {
+      const { clientX, clientY } = event
+
+      setPosition({x: clientX, y: clientY})
+    }
+
+    window.addEventListener('pointermove', handlePointerMove)
+  }, [position.x, position.y])
+
   return (
     <main className='board'>
+      <div style={{
+        position: 'absolute',
+        width: '40px',
+        height: '40px',
+        top: '-15px',
+        left: '-20px',
+        pointerEvents: 'none',
+        transform: `translate(${position.x}px, ${position.y}px)`,
+        }}>
+        <p style={{ fontSize: 'xx-large' }}>{ turn == '\u{274C}' ? '\u{274C}' : '\u{2B55}' }</p>
+      </div>
       <button onClick={resetGame}>Volver a jugar</button>
       <section className='game'>
         {

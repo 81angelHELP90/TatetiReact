@@ -82,4 +82,13 @@ const checkRowAndColumn = (aGame) => {
 
     return ''
 }
+
+export function saveGameToLocalStorage(items){
+  //localStorage.setItem('board', JSON.stringify(newBoard))
+  //localStorage.setItem('turn', newTurn)
+
+  items.forEach(item => {
+    localStorage.setItem(item.key, item.value)
+  })
+}
  
