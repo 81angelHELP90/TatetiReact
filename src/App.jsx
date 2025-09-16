@@ -73,6 +73,9 @@ function App() {
     }
 
     window.addEventListener('pointermove', handlePointerMove)
+
+    //hago el clean useEffect (cleanup)
+    return () => { window.removeEventListener('pointermove', handlePointerMove) }
   }, [position.x, position.y])
 
   return (
