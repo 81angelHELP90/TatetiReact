@@ -27,7 +27,6 @@ body {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  cursor: default !important;
 }
 
 .board {
@@ -95,7 +94,6 @@ body {
   left: 0;
   display: grid;
   place-items: center;
-  background-color: rgba(0, 0, 0, 0.7);
 }
 
 .winner .text {
@@ -137,4 +135,8 @@ body {
 
 .hidden {
   display: none;
+}
+
+.no-cursor{
+  cursor: none !important;
 }

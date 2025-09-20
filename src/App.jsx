@@ -58,6 +58,13 @@ function App() {
   }
 
   useEffect(() => {
+    document.body.classList.add('no-cursor')
+     
+    //hago el clean useEffect (cleanup)
+    return () => { document.body.classList.remove('no-cursor') }
+  }, [turn])
+
+  useEffect(() => {
      //Guardo la partida 
     saveGameToLocalStorage([
       { key: 'board', value: JSON.stringify(board) },
@@ -73,6 +80,9 @@ function App() {
     }
 
     window.addEventListener('pointermove', handlePointerMove)
+
+    //hago el clean useEffect (cleanup)
+    return () => { window.removeEventListener('pointermove', handlePointerMove) }
   }, [position.x, position.y])
 
   return (
